@@ -46,10 +46,9 @@
 				$lUsername = $_POST["username"];
 				$lPassword = $_POST["password"];
     		}else{
-    			$lUserInfoSubmitButton = $_REQUEST["user-info-php-submit-button"];
-				$lUsername = $_REQUEST["username"];
-				$lPassword = $_REQUEST["password"];
-    		}// end if $lProtectAgainstMethodTampering
+    // FIX: Prevent method tampering (OWASP A04)
+    die("Invalid request method");
+}// end if $lProtectAgainstMethodTampering
 
 			 // FIX: Server-side input validation (OWASP A03)
     if (!preg_match('/^[a-zA-Z0-9]{1,20}$/', $lUsername)) {

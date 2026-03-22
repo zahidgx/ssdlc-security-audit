@@ -46,10 +46,18 @@
 				$lUsername = $_POST["username"];
 				$lPassword = $_POST["password"];
     		}else{
-    			$lUserInfoSubmitButton = $_REQUEST["user-info-php-submit-button"];
-				$lUsername = $_REQUEST["username"];
-				$lPassword = $_REQUEST["password"];
-    		}// end if $lProtectAgainstMethodTampering
+    // FIX: Prevent method tampering (OWASP A04)
+    die("Invalid request method");
+}// end if $lProtectAgainstMethodTampering
+
+			 // FIX: Server-side input validation (OWASP A03)
+    if (!preg_match('/^[a-zA-Z0-9]{1,20}$/', $lUsername)) {
+        die("Invalid username format");
+    }
+
+    if (!preg_match('/^[a-zA-Z0-9]{1,20}$/', $lPassword)) {
+        die("Invalid password format");
+    }
 		}// end if $lFormSubmitted
 
    	} catch (Exception $e) {
@@ -168,10 +176,23 @@
     			
 			//$lQueryResult = $SQLQueryHandler->getUserAccount($lUsername, $lPassword);
 			// FIX: Prevent SQL Injection using prepared statements (OWASP A03:2021)
-            $stmt = $db->prepare("SELECT * FROM users WHERE username = ? AND password = ?");
-            $stmt->bind_param("ss", $lUsername, $lPassword);
-            $stmt->execute();
-            $lQueryResult = $stmt->get_result();
+            //$stmt = $db->prepare("SELECT * FROM users WHERE username = ? AND password = ?");
+            //$stmt->bind_param("ss", $lUsername, $lPassword);
+           // $stmt->execute();
+           // $lQueryResult = $stmt->get_result();
+			// FIX: Secure password handling (OWASP A02)
+$stmt = $db->prepare("SELECT * FROM users WHERE username = ?");
+$stmt->bind_param("s", $lUsername);
+$stmt->execute();
+$result = $stmt->get_result();
+
+$lQueryResult = null;
+
+if ($row = $result->fetch_assoc()) {
+    if (password_verify($lPassword, $row['password'])) {
+        $lQueryResult = [$row]; // simulamos resultado válido
+    }
+}
     		
    			$lResultsFound = false;
    			$lRecordsFound = 0;
@@ -219,14 +240,30 @@
 					}
 					
 					echo "<br/>";
-					echo "<span class=\"label\">First Name:&nbsp;</span><span>{$lFirstName}</span><br/>";
-					echo "<span class=\"label\">Last Name:&nbsp;</span><span>{$lLastName}</span><br/>";
-					echo "<span class=\"label\">Username:&nbsp;</span><span>{$lUsername}</span><br/>";
-					echo "<span class=\"label\">Password:&nbsp;</span><span>{$lPassword}</span><br/>";
-					echo "<span class=\"label\">Signature:&nbsp;</span><span>{$lSignature}</span><br/>";
-					echo "<span class=\"label\">Client ID:&nbsp;</span><span>{$lClientID}</span><br/>";
-					echo "<span class=\"label\">Client Secret:&nbsp;</span><span>{$lClientSecret}</span><br/>";
-					echo "<br/>";
+
+// FIX: Output encoding to prevent XSS (OWASP A03:2021)
+$lFirstName = htmlspecialchars($row->firstname, ENT_QUOTES, 'UTF-8');
+$lLastName = htmlspecialchars($row->lastname, ENT_QUOTES, 'UTF-8');
+$lUsername = htmlspecialchars($row->username, ENT_QUOTES, 'UTF-8');
+$lSignature = htmlspecialchars($row->mysignature, ENT_QUOTES, 'UTF-8');
+$lClientID = htmlspecialchars($row->client_id, ENT_QUOTES, 'UTF-8');
+$lClientSecret = htmlspecialchars($row->client_secret, ENT_QUOTES, 'UTF-8');
+
+// FIX: Prevent sensitive data exposure (OWASP A02:2021)
+$lPassword = "********";
+echo "<span class=\"label\">First Name:&nbsp;</span><span>{$lFirstName}</span><br/>";
+echo "<span class=\"label\">Last Name:&nbsp;</span><span>{$lLastName}</span><br/>";
+echo "<span class=\"label\">Username:&nbsp;</span><span>{$lUsername}</span><br/>";
+// Antes (inseguro)
+echo "<span class=\"label\">Password:&nbsp;</span><span>{$lPassword}</span><br/>";
+
+// Después (seguro)
+echo "<span class=\"label\">Password:&nbsp;</span><span>********</span><br/>";
+echo "<span class=\"label\">Signature:&nbsp;</span><span>{$lSignature}</span><br/>";
+echo "<span class=\"label\">Client ID:&nbsp;</span><span>{$lClientID}</span><br/>";
+echo "<span class=\"label\">Client Secret:&nbsp;</span><span>{$lClientSecret}</span><br/>";
+
+echo "<br/>";
 				}// end while
 	
 			} else {

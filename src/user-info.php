@@ -166,7 +166,12 @@
 				//do nothing
 			}// end try
     			
-			$lQueryResult = $SQLQueryHandler->getUserAccount($lUsername, $lPassword);
+			//$lQueryResult = $SQLQueryHandler->getUserAccount($lUsername, $lPassword);
+			// FIX: Prevent SQL Injection using prepared statements (OWASP A03:2021)
+            $stmt = $db->prepare("SELECT * FROM users WHERE username = ? AND password = ?");
+            $stmt->bind_param("ss", $lUsername, $lPassword);
+            $stmt->execute();
+            $lQueryResult = $stmt->get_result();
     		
    			$lResultsFound = false;
    			$lRecordsFound = 0;

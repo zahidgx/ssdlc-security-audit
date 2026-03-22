@@ -230,11 +230,14 @@ $lClientSecret = htmlspecialchars($row->client_secret, ENT_QUOTES, 'UTF-8');
 
 // FIX: Prevent sensitive data exposure (OWASP A02:2021)
 $lPassword = "********";
-
 echo "<span class=\"label\">First Name:&nbsp;</span><span>{$lFirstName}</span><br/>";
 echo "<span class=\"label\">Last Name:&nbsp;</span><span>{$lLastName}</span><br/>";
 echo "<span class=\"label\">Username:&nbsp;</span><span>{$lUsername}</span><br/>";
+// Antes (inseguro)
 echo "<span class=\"label\">Password:&nbsp;</span><span>{$lPassword}</span><br/>";
+
+// Después (seguro)
+echo "<span class=\"label\">Password:&nbsp;</span><span>********</span><br/>";
 echo "<span class=\"label\">Signature:&nbsp;</span><span>{$lSignature}</span><br/>";
 echo "<span class=\"label\">Client ID:&nbsp;</span><span>{$lClientID}</span><br/>";
 echo "<span class=\"label\">Client Secret:&nbsp;</span><span>{$lClientSecret}</span><br/>";

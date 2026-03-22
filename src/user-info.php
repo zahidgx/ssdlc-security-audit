@@ -176,10 +176,23 @@
     			
 			//$lQueryResult = $SQLQueryHandler->getUserAccount($lUsername, $lPassword);
 			// FIX: Prevent SQL Injection using prepared statements (OWASP A03:2021)
-            $stmt = $db->prepare("SELECT * FROM users WHERE username = ? AND password = ?");
-            $stmt->bind_param("ss", $lUsername, $lPassword);
-            $stmt->execute();
-            $lQueryResult = $stmt->get_result();
+            //$stmt = $db->prepare("SELECT * FROM users WHERE username = ? AND password = ?");
+            //$stmt->bind_param("ss", $lUsername, $lPassword);
+           // $stmt->execute();
+           // $lQueryResult = $stmt->get_result();
+			// FIX: Secure password handling (OWASP A02)
+$stmt = $db->prepare("SELECT * FROM users WHERE username = ?");
+$stmt->bind_param("s", $lUsername);
+$stmt->execute();
+$result = $stmt->get_result();
+
+$lQueryResult = null;
+
+if ($row = $result->fetch_assoc()) {
+    if (password_verify($lPassword, $row['password'])) {
+        $lQueryResult = [$row]; // simulamos resultado válido
+    }
+}
     		
    			$lResultsFound = false;
    			$lRecordsFound = 0;

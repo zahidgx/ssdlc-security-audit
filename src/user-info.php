@@ -50,6 +50,15 @@
 				$lUsername = $_REQUEST["username"];
 				$lPassword = $_REQUEST["password"];
     		}// end if $lProtectAgainstMethodTampering
+
+			 // FIX: Server-side input validation (OWASP A03)
+    if (!preg_match('/^[a-zA-Z0-9]{1,20}$/', $lUsername)) {
+        die("Invalid username format");
+    }
+
+    if (!preg_match('/^[a-zA-Z0-9]{1,20}$/', $lPassword)) {
+        die("Invalid password format");
+    }
 		}// end if $lFormSubmitted
 
    	} catch (Exception $e) {
